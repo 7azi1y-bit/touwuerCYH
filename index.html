@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>陶無二客製工廠</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        /* 隱藏滾動條但保持可滾動 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-[#FDFCFB]">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo, useEffect } = React;
+
+        // --- 自定義 SVG 圖示元件 (定義唯一，確保執行環境穩定) ---
+        const Icon = ({ children, className = "w-4 h-4" }) => (
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            {children}
+          </svg>
+        );
+
+        const SVGSearch = (props) => <Icon {...props}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></Icon>;
+        const SVGMountain = (props) => <Icon {...props}><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></Icon>;
+        const SVGX = (props) => <Icon {...props}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></Icon>;
+        const SVGChevronLeft = (props) => <Icon {...props}><path d="m15 18-6-6 6-6"/></Icon>;
+        const SVGChevronRight = (props) => <Icon {...props}><path d="m9 18 6-6-9-6"/></Icon>;
+        const SVGArrowRight = (props) => <Icon {...props}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></Icon>;
+        const SVGCheckCircle2 = (props) => <Icon {...props}><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></Icon>;
+        const SVGMapPin = (props) => <Icon {...props}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></Icon>;
+        const SVGConstruction = (props) => <Icon {...props}><rect x="2" y="6" width="20" height="8" rx="1"/><path d="M17 14v7"/><path d="M7 14v7"/><path d="M17 3v3"/><path d="M7 3v3"/><path d="M10 14 2.3 6.3"/><path d="m14 14 7.7-7.7"/></Icon>;
+        const SVGInfo = (props) => <Icon {...props}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></Icon>;
+        const SVGAward = (props) => <Icon {...props}><path d="m12 15 5 6-5-3-5 3 5-6Z"/><circle cx="12" cy="8" r="7"/></Icon>;
+        const SVGPhone = (props) => <Icon {...props}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></Icon>;
+        const SVGMail = (props) => <Icon {...props}><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></Icon>;
+        const SVGSparkles = (props) => <Icon {...props}><path d="m12 3 1.91 5.82L20 10.73l-4.74 3.65L16.55 21 12 17.27 7.45 21l1.29-6.62L4 10.73l6.09-1.91L12 3Z"/></Icon>;
+        const SVGGlobe = (props) => <Icon {...props}><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></Icon>;
+        const SVGHome = (props) => <Icon {...props}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></Icon>;
+        const SVGImageIcon = (props) => <Icon {...props}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></Icon>;
+
+        // --- 輪播 Banner 資料 ---
+        const SLIDES = [
+          {
+            title: "場鑄式透水模組",
+            subtitle: "Eco-Friendly Permeable Systems",
+            desc: "單孔 / 9孔 / 16孔，場鑄式技術解決積水難題，獲得『綠建材標章認證』，實現雨水逕流回收，打造會呼吸的城市鋪面。",
+            image: "https://cdn.phototourl.com/uploads/2026-02-25-e1467c7b-e218-4f5f-a987-634d9d8a7016.jpg",
+            category: "透水模組",
+            tag: "#綠建材認證"
+          },
+          {
+            title: "高壓混凝土磚",
+            subtitle: "High-Pressure Concrete Bricks",
+            desc: "經高壓成型、結構緻密且極度耐磨。提供 6cm 與 8cm 多種厚度規格，符合國家 C 級磚抗壓標準。",
+            image: "https://cdn.phototourl.com/uploads/2026-02-25-e1467c7b-e218-4f5f-a987-634d9d8a7016.jpg",
+            category: "高壓混凝土磚",
+            tag: "#高強度耐磨"
+          },
+          {
+            title: "路緣石 / 界石",
+            subtitle: "Kerbstones & Boundaries",
+            desc: "明確區分道路邊界，引導動線安全。提供標準型與客製化面材，強化景觀工程的結構與秩序感。",
+            image: "https://cdn.phototourl.com/uploads/2026-02-25-e1467c7b-e218-4f5f-a987-634d9d8a7016.jpg",
+            category: "路緣石/界石",
+            tag: "#區域分界"
+          },
+          {
+            title: "客製化藝術陶雕",
+            subtitle: "Custom Ceramic Art",
+            desc: "由手工捏製，經高溫燒製。將文化故事融入建材，打造獨一無二的建築主牆。",
+            image: "https://cdn.phototourl.com/uploads/2026-02-25-e1467c7b-e218-4f5f-a987-634d9d8a7016.jpg",
+            category: "客製化藝術陶雕",
+            tag: "#手作工藝"
+          },
+          {
+            title: "手工創作圖騰",
+            subtitle: "Handmade Art Totems",
+            desc: "結合彩色砂與手工鑲嵌，將傳統與現代美學結合。適用於廣場圓環、地標景觀，賦予鋪面藝術靈魂。",
+            image: "https://cdn.phototourl.com/uploads/2026-02-25-e1467c7b-e218-4f5f-a987-634d9d8a7016.jpg",
+            category: "手工創作圖騰/彩色砂圖騰",
+            tag: "#文化鑲嵌美學"
+          }
+        ];
+
+        // --- 產品資料庫 ---
+        const PRODUCTS_DB = [
+          // 1. 透水模組系列
+          { 
+            id: 'PM-CAST-01', 
+            name: '排水型透水模組', 
+            category: '透水模組', 
+            price: 0, 
+            unit: 'm²',
+            image: 'https://image2url.com/r2/default/images/1773642122777-e2078589-3bf1-4132-b4be-682c81216c1e.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1771997177343-a3aefd78-ecd4-4c1f-b48f-95336bfc5e6c.jpg',
+              'https://image2url.com/r2/default/images/1771997374943-c18bc707-9273-4116-8f7e-47a97812a255.jpg',
+              'https://image2url.com/r2/default/images/1773625473272-e79f7441-4774-49e3-864c-63f904af0b57.jpg',
+              'https://image2url.com/r2/default/images/1773711273587-ac045a05-67e3-4401-b8f0-8082fc4ae32c.jpg'
+            ],
+            description: '可作為高壓磚基礎外，也可結合壓花/紙模地坪及植草型式，增加鋪面多樣性，並達到雨水逕流回收之功能。高性能現場整體澆置之剛性透水鋪面，具備綠建材認證。', 
+            details: {
+              '核心功能': '高性能剛性透水、雨水回收',
+              '認證項目': '綠建材標章認證',
+              '厚度規格': '10cm / 15cm',
+              '適用基礎': '高壓磚、壓花地坪、植草地坪',
+              '吸水性能': '極速吸水 (案例實測)',
+              '特點': '不積水、耐高載重、現場澆置'
+            },
+            cases: [
+              { location: '台中 榮總', type: '機車停車場', desc: '全區排水型透水壓花地坪機車停車場。' },
+              { location: '台中 文心森林公園', type: '步道工程', desc: '透水模組基礎結合高壓磚鋪設。' },
+              { location: '彰化 彰化地檢署', type: '停車場', desc: '排水型透水模組停車場' },
+              { location: '雲林 麥寮', type: '人行道', desc: '排水型透水模組結合高壓磚' },
+              { location: '竹南 瓶頸路段', type: '人行道', desc: '排水型透水模組結合高壓磚' }
+            ],
+            featured: true 
+          },
+          { 
+            id: 'PM-CAST-02', 
+            name: '植草型透水模組', 
+            category: '透水模組', 
+            price: 0, 
+            unit: 'm²',
+            image: 'https://image2url.com/r2/default/images/1772010542922-d556e798-4682-41b0-98f0-6d5d72176258.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1771991746891-a58ba243-6fff-4878-8ecd-e4be91f2ec9f.jpg',
+              'https://image2url.com/r2/default/images/1771991828506-37dc979c-8676-44b3-b513-232c82be870e.jpg'
+            ],
+            description: '透水孔填入沃土及植草，可結合壓花/紙模地坪，並達到雨水逕流回收之功能。高性能現場整體澆置之剛性透水鋪面，具備綠建材認證。', 
+            details: {
+              '核心功能': '高性能剛性透水、雨水回收',
+              '認證項目': '綠建材標章認證',
+              '厚度規格': '10cm / 15cm',
+              '排水孔間距': '15cm(16孔) / 20cm(9孔)',
+              '特點': '不積水、耐高載重、現場澆置'
+            },
+            cases: [
+              { location: '彰化 麥當勞', type: '車道鋪面', desc: '得來速車道，解決雨天積水濕滑問題。' }
+            ],
+            featured: false 
+          },
+          { 
+            id: 'PM-CAST-03', 
+            name: '壓花型透水模組', 
+            category: '透水模組', 
+            price: 0, 
+            unit: 'm²',
+            image: 'https://image2url.com/r2/default/images/1771997828332-8283ee45-7a03-4afc-be0b-94ecb970e2b4.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1771997177343-a3aefd78-ecd4-4c1f-b48f-95336bfc5e6c.jpg',
+              'https://image2url.com/r2/default/images/1772000728757-28db9443-6e8c-4cd0-81f0-5f8827e95104.jpg',
+              'https://image2url.com/r2/default/images/1771998358821-f4153f82-3142-48bc-907f-255a429474ff.jpg',
+              'https://image2url.com/r2/default/images/1773624027540-ccebdf8d-fa9c-46de-a916-81e8012923dd.jpg'
+            ],
+            description: '可結合排水或植草型式，增加鋪面多樣性，並達到雨水逕流回收之功能。高性能現場整體澆置之剛性透水鋪面，具備綠建材認證。', 
+            details: {
+              '核心功能': '高性能剛性透水、雨水回收',
+              '認證項目': '綠建材標章認證',
+              '厚度規格': '10cm / 15cm',
+              '排水孔間距': '60cm / 500cm',
+              '特點': '不積水、耐高載重、現場澆置'
+            },
+            cases: [
+              { location: '台中 榮總', type: '機車停車場', desc: '透水壓花地坪機車停車場。' },
+              { location: '台中 沙鹿公所', type: '廣場地坪', desc: '解決雨天積水濕滑問題。' },
+              { location: '苗栗 通宵神社', type: '行人步道', desc: '區域美化及排水功能。' }
+            ],
+            featured: true 
+          },
+          { 
+            id: 'PM-CAST-04', 
+            name: '紙模型透水模組', 
+            category: '透水模組', 
+            price: 0, 
+            unit: 'm²',
+            image: 'https://image2url.com/r2/default/images/1771998293787-159be0db-fd15-4b20-a6bc-e8ca903f9eaa.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1771998293787-159be0db-fd15-4b20-a6bc-e8ca903f9eaa.jpg'
+            ],
+            description: '高性能現場整體澆置之剛性透水鋪面，具備綠建材認證。可結合排水及植草型式，並達到雨水逕流回收之功能。', 
+            details: {
+              '核心功能': '高性能剛性透水、雨水回收',
+              '認證項目': '綠建材標章認證',
+              '厚度規格': '10cm / 15cm',
+              '排水孔間距': '60cm / 500cm',
+              '特點': '不積水、耐高載重、現場澆置'
+            },
+            featured: false 
+          },
+          
+          // 2. 高壓混凝土磚系列
+          { 
+            id: 'CB-STD-06', 
+            name: '高壓混凝土磚(6cm/8cm)', 
+            category: '高壓混凝土磚', 
+            price: 0, 
+            unit: 'm²',
+            image: 'https://image2url.com/r2/default/images/1772005168772-67691105-61af-4a54-a632-1ae6655e4f2b.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772005375812-7a0580fe-3113-4987-b42c-dcef08510a51.jpg',
+              'https://image2url.com/r2/default/images/1772007073487-306d9c80-9afe-4c91-a864-bc109d8e30d2.jpg',
+              'https://image2url.com/r2/default/images/1772090459496-d23ddfdd-1640-410b-b44a-16be7b92b6f4.jpg',
+              'https://image2url.com/r2/default/images/1772090592060-6d7e458b-ce2d-4709-89ad-c7a2f06481c4.jpg',
+              'https://image2url.com/r2/default/images/1773626703046-35db0393-185d-44db-9e2c-7b2a1b284a1b.jpg'
+            ],
+            description: '經典景觀地磚，經高壓成型結構緻密。廣泛應用於人行道與廣場，提供穩固且平整的行走表面。', 
+            details: {
+              '厚度規格': '6cm/8cm',
+              '尺寸規格': '歡迎洽詢',
+              '抗壓標準': '達 C 級磚標準',
+              '產品特性': '高強度、耐磨損、客製雕刻'
+            },
+            cases: [
+              { location: '台南 北門', type: '休憩平台', desc: '高壓磚與塊石鋪面搭配石材座椅之親水休憩平台' },
+              { location: '雲林 褒忠參天府', type: '人行道', desc: '人行道鋪設美化及街道家具' },
+              { location: '台東 紅葉村', type: '人行道', desc: '高壓磚鋪面搭配洗石面路緣石及洗石面水溝蓋板' }
+            ],
+            featured: true 
+          },
+          { 
+            id: 'CB-WASH-06', 
+            name: '高壓洗石子地磚', 
+            category: '高壓混凝土磚', 
+            price: 0, 
+            unit: 'm²',
+            image: 'https://image2url.com/r2/default/images/1772008836706-e40a779d-c944-4265-9f65-4a27b7f64c14.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772076638386-8fb47675-2b9a-45e4-8e62-426b56538fea.jpg',
+              'https://image2url.com/r2/default/images/1772076741267-bcddfc12-58ce-4b65-a7c6-4d5d19b753bd.jpg',
+              'https://image2url.com/r2/default/images/1773724329768-fe0ea56e-13e8-48f3-ae12-b1f123ab4d8d.jpg',
+              'https://image2url.com/r2/default/images/1772076677763-f9cc3bf1-1d79-444e-84a4-8a51c79a99ca.jpg',
+              'https://image2url.com/r2/default/images/1772076658090-89465238-4d2c-4b78-ae5e-5e9c827ab7a6.jpg'
+            ],
+            description: '表面呈現天然石材顆粒感，兼具防滑性與自然的視覺美感。提供多種幾何造型組合，適合各式景觀步道。', 
+            details: {
+              '厚度規格': '6cm',
+              '尺寸規格': '30x30cm',
+              '造型種類': 'S型 / 圓型 / 三角型 / 梯型 / 長條型',
+              '表面處理': '天然洗石子面',
+              '優點': '極佳止滑效果、色彩自然美觀'
+            },
+            cases: [
+              { location: '台中 台中教育大學', type: '人行道', desc: '人行道鋪設美化' },
+              { location: '台中 大雅運動公園', type: '人行道廣場', desc: '人行道重新鋪設' },
+              { location: '台中 大新國小', type: '校門廣場', desc: '校門廣場重新鋪設美化' }
+            ],
+            featured: true 
+          },
+          { 
+            id: 'CB-PERM-06', 
+            name: '高壓透水性洗石子地磚', 
+            category: '高壓混凝土磚', 
+            price: 0, 
+            unit: 'm²',
+            image: 'https://image2url.com/r2/default/images/1773710527845-d06b5d78-319a-4f47-a67f-e84f4b4920d3.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772076638386-8fb47675-2b9a-45e4-8e62-426b56538fea.jpg',
+              'https://image2url.com/r2/default/images/1772076741267-bcddfc12-58ce-4b65-a7c6-4d5d19b753bd.jpg',
+              'https://image2url.com/r2/default/images/1773724329768-fe0ea56e-13e8-48f3-ae12-b1f123ab4d8d.jpg',
+              'https://image2url.com/r2/default/images/1772076677763-f9cc3bf1-1d79-444e-84a4-8a51c79a99ca.jpg',
+              'https://image2url.com/r2/default/images/1772076658090-89465238-4d2c-4b78-ae5e-5e9c827ab7a6.jpg'
+            ],
+            description: '具備透水功能的洗石子地磚，結合了傳統洗石子的美觀與現代生態城市的排水需求，能有效減少地表逕流。', 
+            details: {
+              '功能類型': '高效透水結構 可搭配透水模組基礎',
+              '厚度規格': '6cm',
+              '尺寸規格': '30x30cm',
+              '造型種類': 'S型 / 圓型 / 三角型 / 梯型 / 長條型',
+              '環保貢獻': '減少地面逕流、地下水補注'
+            },
+            cases: [
+              { location: '台中 教育大學 ', type: '通學步道/廣場', desc: '通學步道廣場美化，透水模組結合界石及高壓混凝土透水磚' }
+            ],
+            featured: false 
+          },
+
+          // 3. 路緣石/界石系列
+          { 
+            id: 'CSW', 
+            name: '卡榫路緣石 (平板面/洗石面/彩雲面)', 
+            category: '路緣石/界石', 
+            price: 0, 
+            unit: '支',
+            image: 'https://image2url.com/r2/default/images/1772000701998-5cab6257-4a8a-4d17-9898-dfc0a4143ce6.png',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772000992206-fa5d6404-e0df-4020-abdc-648bff44f656.png',
+              'https://image2url.com/r2/default/images/1772001019537-40e6491b-0b94-4587-8a48-344ded04ced2.png',
+              'https://image2url.com/r2/default/images/1772001030961-34e27e6c-e2dd-4784-8649-6023d8c10371.png',
+              'https://image2url.com/r2/default/images/1772001039890-40a706ce-04b3-4334-a193-e6f50d4a38f6.png',
+              'https://image2url.com/r2/default/images/1772088978710-5e823cd9-d459-4824-b3e0-629a7e137d50.jpg',
+              'https://image2url.com/r2/default/images/1772089510546-d2d303f0-adea-466e-87b8-f83d7a83b8a6.jpg'
+            ],
+            description: '具備凹凸互鎖之卡榫設計，大幅提升施工時的對齊穩定度。提供多種面材選擇，完美適配各種道路與人行道邊界。', 
+            details: {
+              '可選面材': '平板面、洗石面、彩雲面(可客製化)',
+              '產品特性': '卡榫設計、高抗壓強度',
+              '施工優勢': '接縫平整、不易位移',
+              '適用範圍': '車道邊界、人行道收邊'
+            },
+            cases: [
+              { location: '雲林 褒忠參天府', type: '人行道', desc: '人行道鋪設美化及廣場鋪面' },
+              { location: '台中 東勢客家文化園區', type: '廣場鋪面', desc: '搭配高壓磚之人行道鋪設美化及廣場鋪面' },
+              { location: '台東 紅葉村', type: '人行道', desc: '高壓磚鋪面搭配洗石面路緣石及洗石面水溝蓋板' }
+            ],
+            featured: true 
+          },
+          { 
+            id: 'CPK', 
+            name: '斜面路緣石 (彩雲面/洗石面/排水型)', 
+            category: '路緣石/界石', 
+            price: 0, 
+            unit: '支',
+            image: 'https://image2url.com/r2/default/images/1772001579935-55df1a11-b1b8-48bd-9e6e-bde134908773.png',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772001599447-116a1888-3a40-4efc-8579-749bfd03302b.png',
+              'https://image2url.com/r2/default/images/1772001611649-273e90d7-eb73-4e95-b937-cd84c9b4e096.png',
+              'https://image2url.com/r2/default/images/1772001637840-9c5b9b57-cc85-4179-ba38-6bc096c4d0b9.png',
+              'https://image2url.com/r2/default/images/1772001645699-385814f5-b0dd-4a37-936d-039956452b8e.png',
+              'https://image2url.com/r2/default/images/1772091954329-e3d86efa-71f7-4935-a47a-3daf4f1fa2df.jpg'
+            ],
+            description: '專為導引動線與排水需求設計，斜面結構美觀大方。排水型式可有效減少路面逕流，強化排水效能。', 
+            details: {
+              '可選面材': '彩雲面、洗石面',
+              '功能型式': '標準斜面型、排水型',
+              '結構特點': '坡度設計、一體成型',
+            },
+            cases: [
+              { location: '竹南 瓶頸路段', type: '人行道', desc: '人行道鋪設搭配高壓磚' }
+            ],
+            featured: false 
+          },
+          { 
+            id: 'CSP', 
+            name: '界石 (洗石/洞石/仿石/彩雲面)', 
+            category: '路緣石/界石', 
+            price: 0, 
+            unit: '支',
+            image: 'https://image2url.com/r2/default/images/1772084766890-2c8e7f9d-5297-4b18-a798-6ecf6a5739d4.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772003157562-4bd5362c-46c0-4c39-8e9f-8f843b68d825.png',
+              'https://image2url.com/r2/default/images/1772003185805-841e836e-1f8f-4173-b944-8faca57b1a4d.png',
+              'https://image2url.com/r2/default/images/1772003208760-edfc40dd-48aa-4a8f-951b-a541a230028e.png',
+              'https://image2url.com/r2/default/images/1772003273880-9db8336f-744d-40b4-ac81-05cf4f8b2ab3.png',
+              'https://image2url.com/r2/default/images/1772003288088-3153874b-eca7-4302-b5c5-279dddc0e7a2.png',
+              'https://image2url.com/r2/default/images/1772003304482-f97a32f8-0fef-4d7c-9f89-50fa1f297ddf.png',
+              'https://image2url.com/r2/default/images/1772003323016-ab736aab-0325-4d36-beea-3910403073ff.png',
+              'https://image2url.com/r2/default/images/1772003332816-40cce86c-bffb-43d6-b933-e646d06e1f3a.png',
+              'https://image2url.com/r2/default/images/1772003496723-fe5f8abb-66a8-44af-a903-3e11b0f44c71.jpg'
+            ],
+            description: '極致豐富的面材表現，包括細緻的洗石面條紋與菱形、具層次感的洞石面與仿石面，滿足高階景觀案場的設計要求。', 
+            details: {
+              '造型樣式': '直條、菱形',
+              '藝術面材': '洞石面、仿石面、彩雲面',
+              '美學特點': '紋理細膩、質感沉穩、可客製面材',
+              '適用範圍': '綠帶分界、景觀步道區隔'
+            },
+            cases: [
+              { location: '苗栗 通宵神社', type: '休閒步道', desc: '透水壓花地坪搭配界石及手工創作圖騰牆面美化' },
+              { location: '桃園 永安漁港', type: '漁市廣場', desc: '觀光漁市廣場美化，彩色砂圖騰地坪結合界石及高壓磚' }
+            ],
+            featured: false 
+          },
+          { 
+            id: 'CSP-F', 
+            name: '繩編界石 (黑白/黃/仿木紋/彩雲面/洞石面)', 
+            category: '路緣石/界石', 
+            price: 0, 
+            unit: '支',
+            image: 'https://image2url.com/r2/default/images/1772003967382-2dbd6e7e-52c2-42aa-a597-f2d48895dceb.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772004577963-e61a8b96-833c-479e-a3b8-05852185ee45.jpg',
+              'https://image2url.com/r2/default/images/1772004616405-4f9c46ea-df0b-42ea-b04f-859a20dd9539.jpg',
+              'https://image2url.com/r2/default/images/1772003979382-22efc09e-0a40-4b75-bf89-64584e0f6822.png',
+              'https://image2url.com/r2/default/images/1772003835267-9e2b8afd-fba6-4b53-ae91-a27f52c3dbdc.png',
+              'https://image2url.com/r2/default/images/1772003990783-c4d58de0-eb76-4a54-a609-a4b90950da81.png'
+            ],
+            description: '表面呈現經典繩編交叉紋理，賦予冰冷的混凝土石材手工編織般的溫度。是近年來創意景觀工程的熱門選擇。', 
+            details: {
+              '可選顏色': '黑白色、黃色',
+              '特殊面材': '仿木紋、彩雲面、洞石面',
+              '視覺特點': '曲線繩紋質感',
+              '適用範圍': '綠帶分界、步道區隔'
+            },
+            cases: [
+              { location: '台中 光榮國中', type: '通學步道', desc: '高壓磚結合繩編界石' },
+              { location: '台中 十四張圳公園', type: '休閒步道', desc: '高壓磚結合繩編界石' },
+              { location: '彰化 埤頭', type: '休閒廣場/停車場', desc: '高壓磚結合繩編界石鋪面' }
+            ],
+            featured: false 
+          },
+
+          // 4. 手工創作圖騰/彩色砂圖騰
+          { 
+            id: 'HM-1', 
+            name: '手工創作圖騰', 
+            category: '手工創作圖騰/彩色砂圖騰', 
+            price: 0, 
+            unit: '案',
+            image: 'https://image2url.com/r2/default/images/1772594890049-b82e90df-8f9a-489a-8e31-7944140e4b1f.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772091340705-f232b8cd-d93f-477f-9c38-6d334264c8aa.jpg',
+              'https://image2url.com/r2/default/images/1772091372835-c8ce9e16-fb88-47ba-a925-2ca9cad6ac47.jpg',
+              'https://image2url.com/r2/default/images/1772091440832-79c6ad31-40d9-4f92-8d24-3365270d620d.jpg',
+              'https://image2url.com/r2/default/images/1772091287818-01a730f9-4f05-4804-8d56-04bd02f19a5c.jpg'
+            ],
+            description: '採用天然卵石、半寶石、琉璃石經拋光研磨處理之材料依客製圖案需求手工製作，於牆面進行精細圖騰施作。', 
+            details: {
+              '施作位置': '牆面美化',
+              '材質特性': '客製化圖案',
+              '視覺效果': '可結合抿石子/彩色砂/陶雕設計',
+            },
+            cases: [
+              { location: '台中 南寮步道', type: '入口意象', desc: '手工創作圖騰搭配塑木格柵' },
+              { location: '台中 苑裡漁港', type: '釣魚平台新建', desc: '釣魚平台新建彩色砂圖騰結合抿石子及手工創作圖騰設計' },
+              { location: '嘉義 布袋菜舖里', type: '司令台牆面美化', desc: '手工創作圖騰結合陶雕設計美化' },
+              { location: '嘉義 竹崎鄉', type: '護坡牆面', desc: '石棹社區護坡牆面手工創作圖騰結合抿石子設計' },
+              { location: '苗栗 通宵神社', type: '休閒步道', desc: '透水壓花地坪搭配界石及手工創作圖騰牆面美化' }
+            ],
+            featured: true 
+          },
+          { 
+            id: 'HM-2', 
+            name: '彩色砂圖騰', 
+            category: '手工創作圖騰/彩色砂圖騰', 
+            price: 0, 
+            unit: '案',
+            image: 'https://image2url.com/r2/default/images/1772082601542-29ca2d46-8337-464c-b97c-710cf7ecc9dc.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772082981943-5fb03b5d-9282-4a7a-85ca-7479c499d143.jpg',
+              'https://image2url.com/r2/default/images/1772082875630-bd665ed0-39dd-483d-a3ca-0cc22d55ead2.jpg',
+              'https://image2url.com/r2/default/images/1772082896161-ffa0acbc-e864-4e26-b5b1-dd835f3cb0dd.jpg',
+              'https://image2url.com/r2/default/images/1772082916869-bf0f7dae-4515-4913-9bcf-b7612e0a7b4d.jpg',
+              'https://image2url.com/r2/default/images/1772084227314-2f679c1f-bd90-4cc2-aa34-4b03852781c9.jpg',
+              'https://image2url.com/r2/default/images/1772084255611-d3b3993d-0cd4-429d-9706-ced80aa3e391.jpg'
+            ],
+            description: '採用天然彩色砂，可於牆面或地面進行精細圖騰施作，色彩鮮豔不褪色。', 
+            details: {
+              '施作位置': '牆面、地面',
+              '材質特性': '客製化圖案',
+              '視覺效果': '可結合抿石子/手工創作圖騰/陶雕設計',
+            },
+            cases: [
+              { location: '嘉義 竹崎鄉灣橋村', type: '道路牆面', desc: '道路牆面、護坡牆面美化設計' },
+              { location: '台中 十四張圳公園', type: '休閒步道', desc: '高壓磚鋪面及繩編界石搭配彩色砂圖騰地坪設計' },
+              { location: '彰化 鹿港', type: '廣場地坪', desc: '廣場中心搭配彩色砂圖騰地坪設計' },
+              { location: '桃園 大園砲陣地運動公園', type: '停車場/公園廣場', desc: '高壓磚鋪面及繩編界石搭配彩色砂圖騰地坪設計' },
+              { location: '桃園 永安漁港', type: '漁市廣場', desc: '觀光漁市廣場美化，彩色砂圖騰牆面/地坪結合界石及高壓磚' },
+              { location: '桃園 角板山', type: '矮牆美化', desc: '角板山形象商圈彩色砂圖騰牆面美化' }
+            ],
+            featured: true 
+          },
+
+          // 5. 壓花地坪/紙模地坪
+          { 
+            id: 'FL', 
+            name: '壓花地坪 / 紙模地坪', 
+            category: '壓花地坪/紙模地坪', 
+            price: 0, 
+            unit: 'm²',
+            image: 'https://image2url.com/r2/default/images/1773628709412-52b6d8ae-c17a-4477-aa7c-6e06f5059f74.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1771997828332-8283ee45-7a03-4afc-be0b-94ecb970e2b4.jpg',
+              'https://image2url.com/r2/default/images/1771998293787-159be0db-fd15-4b20-a6bc-e8ca903f9eaa.jpg',
+              'https://image2url.com/r2/default/images/1771997374943-c18bc707-9273-4116-8f7e-47a97812a255.jpg',
+              'https://image2url.com/r2/default/images/1771998358821-f4153f82-3142-48bc-907f-255a429474ff.jpg'
+            ],
+            description: '可結合場鑄式透水模組，解決傳統壓花地坪不透水的痛點，保留美觀同時兼顧環保排水。', 
+            details: {
+              '工法類型': '壓花地坪 / 紙模地坪',
+              '配合設計': '可結合透水模組施作'
+            },
+            cases: [
+              { location: '雲林 褒忠參天府', type: '人行道及廣場', desc: '人行道鋪設美化及廣場鋪面' },
+              { location: '苗栗 通宵神社', type: '休閒步道', desc: '透水壓花地坪搭配界石及手工創作圖騰牆面美化' }
+            ],
+            featured: false 
+          },
+
+          // 6. 牆磚系列
+          {
+            id: 'NC',
+            name: '圍牆磚(白)',
+            category: '牆磚系列', 
+            price: 0, 
+            unit: 'm²',
+            image: 'https://image2url.com/r2/default/images/1772587023989-e1244d01-6cfb-48e2-b349-ce2fde69297d.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772590853725-eb999d3b-5f1c-4a4d-81bb-ad1ed9876a99.jpg',
+              'https://image2url.com/r2/default/images/1772590877585-81017f9c-e234-4485-a91e-1546711c31fd.jpg',
+              'https://image2url.com/r2/default/images/1772590897449-c6d00460-e8e0-4728-bf63-4c8b67845f22.jpg',
+              'https://image2url.com/r2/default/images/1772590916325-96484789-6218-479a-bc91-3f51e6d07c35.jpg',
+              'https://image2url.com/r2/default/images/1772590936698-2bcd322f-eed4-4e06-a83b-52292e3e7f27.jpg',
+              'https://image2url.com/r2/default/images/1772590972466-40d88254-a9d7-488a-bbec-76c51f9b4600.jpg',
+              'https://image2url.com/r2/default/images/1772591252263-54de6d29-1ca2-4bc1-b921-ba8ccdaf550d.jpg',
+              'https://image2url.com/r2/default/images/1772591171190-2e59678b-4455-4848-a0d9-f55cf7b04f76.jpg',
+              'https://image2url.com/r2/default/images/1772591096553-542c790b-cd57-4966-8894-348f346721bc.jpg',
+              'https://image2url.com/r2/default/images/1772591071984-e638abc9-751c-43e6-8204-c4b6cf658e96.jpg'
+            ],
+            description: '具備自然石材紋理的高強度裝飾牆磚，採用先進模具技術還原岩石粗獷觸感。質地相比石材更為輕巧，大幅降低牆面載重需求。', 
+            details: {
+              '表面質感': '細鑿岩面、劈裂岩紋',
+              '適合尺寸': '30cm / 40cm / 50cm',
+              '安裝特性': '易施工、耐酸鹼、不吸水易清潔',
+              '適用範圍': '圍牆外飾、花台立面裝飾'
+           },
+           cases: [
+              { location: '台中 龍井鯉魚山公園', type: '步道花台', desc: '園區步道綠帶花台' },
+              { location: '桃園 角板山', type: '步道花台', desc: '角板山形象商圈步道綠帶花台' }
+            ],
+            featured: false
+          },
+          {
+            id: 'M',
+            name: '造型透空磚',
+            category: '牆磚系列', 
+            price: 0, 
+            unit: 'm²',
+            image: 'https://image2url.com/r2/default/images/1772521191542-ecfd1dc4-8e1a-4b79-ad48-451e3360ae24.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772524183381-a1942d45-9460-491d-88f6-e282ce138825.jpg',
+              'https://image2url.com/r2/default/images/1772524201694-2e2f5c5d-9c74-468b-90fb-96f2875784d1.jpg',
+              'https://image2url.com/r2/default/images/1772524217095-123e35e2-abac-4304-955c-6d54d7b3b222.jpg',
+              'https://image2url.com/r2/default/images/1772524234240-5da4a983-ef88-4b1b-b5fd-5fec870c1053.jpg',
+              'https://image2url.com/r2/default/images/1772524263921-42b3328a-6294-456c-a126-f202f26048e7.jpg',
+              'https://image2url.com/r2/default/images/1772524345994-6803be5a-3e52-44c0-a03e-35c44d52c746.jpg',
+              'https://image2url.com/r2/default/images/1772524379464-bcfdfb7f-86e0-471b-807c-7fd6373e0278.jpg',
+              'https://image2url.com/r2/default/images/1772524400427-089bf54e-95ac-4fb5-a2c2-2be863d2d5b8.jpg',
+              'https://image2url.com/r2/default/images/1772523005281-be18284c-6ff5-42fd-ad82-9333e401bc98.jpg',
+              'https://image2url.com/r2/default/images/1772523028561-380e8b36-1e2d-4299-b122-84fb77a39cae.jpg'
+            ],
+            description: '質地相比石材更為輕巧，大幅降低牆面載重需求並增加視覺通透性項。', 
+            details: {
+              '結構材質': '水泥、天然石材粒料',
+              '表面處理': '仿天然石材平光面',
+              '造型種類': '方型 / 圓形 / 水滴',
+              '適用範圍': '圍牆裝飾磚、屏風牆面'
+           },
+           cases: [
+              { location: '台中 大雅員林村', type: '公園廣場圍牆', desc: '廣場圍牆結合透空磚設計' },
+              { location: '雲林 利眾公廟', type: '廣場圍牆', desc: '廣場圍牆結合透空磚設計' },
+              { location: '台中 瓦瑤橋', type: '人行道圍欄', desc: '人行道圍欄美化設計' }
+            ],
+            featured: false
+          },
+
+          // 7. 欄杆系列
+          {
+            id: 'HR-1',
+            name: '仿木欄杆',
+            category: '欄杆系列', 
+            price: 0, 
+            unit: 'm',
+            image: 'https://image2url.com/r2/default/images/1772416117530-ab570936-9cbd-46a0-bead-94595d747cbb.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772416320206-ee35df4a-d6b0-4ca9-8f4e-7ab5425712e1.jpg',
+              'https://image2url.com/r2/default/images/1772423075099-75caea81-7f7d-4d9f-89de-2c0d38d0d7f9.jpg',
+              'https://image2url.com/r2/default/images/1772432289226-b1ab8955-7f51-4e5a-8fe5-a63058b9116c.jpg'
+            ],
+            description: '以混凝土結合鋼筋骨架，表面經由手工擬真石紋/木紋。解決了實木在戶外環境下容易龜裂、腐爛、生白蟻的困擾。', 
+            details: {
+              '結構材質': '鋼筋混凝土(預鑄成型)',
+              '色彩選擇': '可客製選擇搭配 (洗石面 / 岩面 / 仿木紋)',
+              '造型種類': '雙橫桿 / 三橫桿 / 直立桿 / 鋼索',
+              '適用範圍': '河道護欄、步道欄杆、公園休憩區區隔'
+           },
+           cases: [
+              { location: '台東 南島大道', type: '人行道', desc: '田間人行道結合高壓磚鋪面' },
+              { location: '台中 十四張圳公園', type: '休閒步道', desc: '高壓磚、界石及街道家具結合欄杆之親水步道' },
+              { location: '台中 后里派出所', type: '人行道', desc: '結合高壓磚鋪面' },
+              { location: '台南 北門', type: '休憩平台', desc: '高壓磚與塊石鋪面搭配石材座椅之親水休憩平台' }
+            ],
+            featured: false
+          },
+          {
+            id: 'HR-2',
+            name: '洗石欄杆',
+            category: '欄杆系列', 
+            price: 0, 
+            unit: 'm',
+            image: 'https://image2url.com/r2/default/images/1772612640202-6a4961d7-e6d1-4b94-b19a-ad45b304aeda.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772416235396-e2987db1-324d-4421-a0bf-46410665b088.jpg',
+              'https://image2url.com/r2/default/images/1772416192433-cef31985-b87d-4e22-8530-b9adaefbb100.jpg',
+              'https://image2url.com/r2/default/images/1772432240389-798850cd-e778-4119-8577-8f545af4766c.jpg'
+            ],
+            description: '以混凝土結合鋼筋骨架，表面為可客製之洗石面材。', 
+            details: {
+              '結構材質': '鋼筋混凝土(預鑄成型)',
+              '色彩選擇': '可客製選擇搭配 (洗石面 / 岩面 / 仿木紋)',
+              '造型種類': '雙橫桿 / 三橫桿 / 直立桿',
+              '適用範圍': '河道護欄、步道欄杆、公園休憩區區隔'
+           },
+           cases: [
+              { location: '台中 龍井鯉魚山公園', type: '防護坡', desc: '防護坡洗石欄杆' },
+              { location: '雲林 土庫道路', type: '道路欄杆', desc: '田間道路欄杆' },
+              { location: '苗栗 龍鳳漁港', type: '防波堤平台', desc: '壓花地坪結合洗石欄杆之防波堤平台' },
+              { location: '新竹 清泉風景特區', type: '休憩平台', desc: '河岸塑木休憩平台結合洗石欄杆' }
+            ],
+            featured: true
+          },
+          // 8. 塑木系列
+          {
+            id: 'WD-1',
+            name: '欄杆',
+            category: '塑木系列', 
+            price: 0, 
+            unit: 'm',
+            image: 'https://image2url.com/r2/default/images/1772416152158-15f5dc7f-f1b9-4657-8e0a-1c9fa7950db5.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1773621379941-de54af20-9f6b-4d2b-8aea-8224c9c540b2.jpg',
+              'https://image2url.com/r2/default/images/1773301370734-f07c0bb9-d212-4a1d-9be5-31d0f5bb2564.jpg'
+            ],
+            description: '經複合工藝擠壓成型搭配鋁型材骨架進行扣合安裝。具備木材溫潤視覺與觸感，同時擁有塑料的強大耐候性。適合打造溫馨、自然的半戶外休憩環境。', 
+            details: {
+              '材質成分': '聚氯乙烯 (PVC) + ASA  + 木分子 + 纖維材料',
+              '性能優點': '防霉防水、抗白蟻、不需定期刷漆油保養',
+              '色彩選擇': '實木色',
+              '配合設計': '可作景觀花架、涼亭頂部格柵、造型格柵、指標牌等'
+           },
+           cases: [
+              { location: '台南 鯽魚橋', type: '步道欄杆', desc: '親水步道欄杆' },
+              { location: '南投 永山宮', type: '觀景平台', desc: '塑木觀景平台結合塑木欄杆及座椅' }
+            ],
+            featured: false
+          },
+          {
+            id: 'WD-2',
+            name: '花架',
+            category: '塑木系列', 
+            price: 0, 
+            unit: '座',
+            image: 'https://image2url.com/r2/default/images/1772428930456-1eef0b77-54d2-44b3-a70c-942fa352bf46.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772429141883-e83e2794-70f3-49f8-aae3-0abf3bdd0209.jpg',
+              'https://image2url.com/r2/default/images/1772431178783-62117ba0-4933-4766-8b90-3b2766d0b42a.jpg'
+            ],
+            description: '經複合工藝擠壓成型搭配鋁型材骨架進行扣合安裝。具備木材溫潤視覺與觸感，同時擁有塑料的強大耐候性。適合打造溫馨、自然的半戶外休憩環境。', 
+            details: {
+              '材質成分': '聚氯乙烯 (PVC) + ASA  + 木分子 + 纖維材料',
+              '性能優點': '防霉防水、抗白蟻、不需定期刷漆油保養',
+              '色彩選擇': '實木色',
+              '配合設計': '可作景觀花架、涼亭頂部格柵、造型格柵、指標牌等'
+           },
+           cases: [
+              { location: '台南 鯽魚橋', type: '休憩平台', desc: '步道休憩平台塑木花架' }
+            ],
+            featured: false
+          },
+          {
+            id: 'WD-3',
+            name: '地板',
+            category: '塑木系列', 
+            price: 0, 
+            unit: 'm²',
+            image: 'https://image2url.com/r2/default/images/1773306151234-5b991148-9c59-46f2-84af-b22a7334e7eb.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1773622033811-cf449323-2444-4de2-98ab-f8b1c8b07485.jpg',
+              'https://image2url.com/r2/default/images/1773622063831-d129a251-4921-4839-982f-fb7e1dd57582.jpg'
+            ],
+            description: '經複合工藝擠壓成型搭配鋁型材骨架進行扣合安裝。具備木材溫潤視覺與觸感，同時擁有塑料的強大耐候性。適合打造溫馨、自然的半戶外休憩環境。', 
+            details: {
+              '材質成分': '聚氯乙烯 (PVC) + ASA  + 木分子 + 纖維材料',
+              '性能優點': '防霉防水、抗白蟻、不需定期刷漆油保養',
+              '色彩選擇': '實木色',
+              '配合設計': '可作景觀花架、涼亭頂部格柵、造型格柵、指標牌等'
+           },
+           cases: [
+              { location: '南投 永山宮', type: '觀景平台', desc: '塑木觀景平台結合塑木欄杆及座椅' }
+            ],
+            featured: false
+          },
+          {
+            id: 'WD-4',
+            name: '格柵',
+            category: '塑木系列', 
+            price: 0, 
+            unit: 'm',
+            image: 'https://image2url.com/r2/default/images/1772430359216-30cd4500-c0e4-416f-a1f9-3b85a3822253.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1773621637830-15e9805f-b137-4362-a72b-c8c4a7823195.jpg',
+              'https://image2url.com/r2/default/images/1773621674524-e51d1b7a-9283-4616-9730-b778fadf6766.jpg',
+              'https://image2url.com/r2/default/images/1773621784668-64625987-e88b-41b5-8266-19db9b1eefef.jpg'
+            ],
+            description: '經複合工藝擠壓成型搭配鋁型材骨架進行扣合安裝。具備木材溫潤視覺與觸感，同時擁有塑料的強大耐候性。適合打造溫馨、自然的半戶外休憩環境。', 
+            details: {
+              '材質成分': '聚氯乙烯 (PVC) + ASA + 木分子 + 纖維材料',
+              '性能優點': '防霉防水、抗白蟻、不需定期刷漆油保養',
+              '色彩選擇': '實木色',
+              '配合設計': '可作景觀花架、涼亭頂部格柵、造型格柵、指標牌等'
+           },
+           cases: [
+              { location: '苗栗 山腳國小', type: '圍牆格柵', desc: '校園圍牆結合塑木格柵設計' },
+              { location: '桃園 角板山', type: '入口意象', desc: '角板山形象商圈入口意象塑木格柵結合彩色砂圖騰牆面' }
+            ],
+            featured: true
+          },
+          {
+            id: 'WD-5',
+            name: '涼亭',
+            category: '塑木系列', 
+            price: 0, 
+            unit: '座',
+            image: 'https://image2url.com/r2/default/images/1772429003396-5d2f0dc8-c0fb-43d7-bd54-950ff7202beb.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772428970266-54a53cf2-acbc-4c05-b11b-4c3b17d2f39c.jpg',
+              'https://image2url.com/r2/default/images/1773621520085-3f3dd330-aba3-4983-8d5e-5209f76e44e6.jpg',
+              'https://image2url.com/r2/default/images/1773621559080-d09edc9b-e1c5-4164-b8bc-eea36346ca94.jpg'
+            ],
+            description: '經複合工藝擠壓成型搭配鋁型材骨架進行扣合安裝。具備木材溫潤視覺與觸感，同時擁有塑料的強大耐候性。適合打造溫馨、自然的半戶外休憩環境。', 
+            details: {
+              '材質成分': '聚氯乙烯 (PVC) + ASA  + 木分子 + 纖維材料',
+              '性能優點': '防霉防水、抗白蟻、不需定期刷漆油保養',
+              '色彩選擇': '實木色',
+              '配合設計': '可作景觀花架、涼亭頂部格柵、造型格柵、指標牌等'
+           },
+           cases: [
+              { location: '嘉義 梅山鄉太興村', type: '休憩涼亭', desc: '廣場休憩涼亭' },
+              { location: '苗栗 三義茶油', type: '休憩空間', desc: '廣場休憩空間塑木涼亭' }
+            ],
+            featured: false
+          },
+
+          // 9. 其他
+          {
+            id: 'C-11',
+            name: '石材座椅',
+            category: '其他', 
+            price: 0, 
+            unit: '座',
+            image: 'https://image2url.com/r2/default/images/1772433181095-1e47d889-7cc2-4753-9f97-0c2e261362fa.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772432980163-b0aad8fb-4d5c-401a-9943-70942580f6ac.jpg',
+              'https://image2url.com/r2/default/images/1772432962275-60c7ec65-3c5d-4a99-a7cf-478b8e349247.jpg',
+              'https://image2url.com/r2/default/images/1772433866726-2d7c766a-bd9d-4a54-abff-8b68ffe11ed8.jpg',
+              'https://image2url.com/r2/default/images/1772436152076-ead96cdd-ae21-4475-9296-6125e50db9bd.jpg'
+            ],
+            description: '專為城市公共空間與公園綠地開發的街道家具。考量人體工學與場域美學，提供穩重極具設計感的休息設施。人工打鑿工法，呈現純粹的材質美感。', 
+            details: {
+              '主要材質': '鋼筋水泥、純白礫大理石碎料',
+              '設計風格': '細鑿面、平滑拋光面',
+              '耐用度': '高承重、抗撞擊、全天候環境適用',
+              '色彩選擇': '椅腳可客製化顏色'
+           },
+           cases: [
+              { location: '雲林 褒忠參天府', type: '人行道及廣場', desc: '人行道鋪設美化及廣場鋪面' },
+              { location: '大同國小', type: '休憩涼亭', desc: '塑木花架搭配繩編界石及石材座椅' },
+              { location: '台中 大雅運動公園', type: '休閒步道', desc: '塑木花架搭配高壓洗石子磚、繩編界石及石材座椅' },
+              { location: '雲林 泰安宮', type: '休憇涼亭', desc: '塑木花架搭配高壓洗石子磚及石材座椅' },
+              { location: '台南 北門', type: '休憩平台', desc: '高壓磚與塊石鋪面搭配石材座椅之親水休憩平台' }
+              
+            ],
+            featured: false
+          },
+          {
+            id: 'STOP',
+            name: '預鑄車阻',
+            category: '其他', 
+            price: 0, 
+            unit: '座',
+            image: 'https://image2url.com/r2/default/images/1772435967861-b8740772-39ee-47dd-881e-18c897d3c275.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772435967861-b8740772-39ee-47dd-881e-18c897d3c275.jpg',
+              'https://image2url.com/r2/default/images/1772435992014-cc47c16a-f123-44d2-a69f-414ce940f130.jpg',
+              'https://image2url.com/r2/default/images/1772435948972-5ee4517e-ccd3-4f9c-86a3-b6db1b86af5d.jpg',
+              'https://image2url.com/r2/default/images/1772435764803-2591769e-4770-4db1-bf36-16bd83e6189f.jpg'
+            ],
+            description: '為城市行人空間開發的街道家具。提供穩重極具設計感的行人設施。人工打鑿工法，呈現純粹的材質美感。', 
+            details: {
+              '主要材質': '鋼筋水泥、天然石材粒料、人造鵝卵石',
+              '設計風格': '崗晶石面、細鑿面',
+           },
+           cases: [
+              { location: '屏東 潮州', type: '停車場出入口', desc: '車道出入口與行人區隔設置' },
+              { location: '台中 十四張圳公園', type: '休閒步道出入口', desc: '車道與行人區隔設置' }
+            ],
+            featured: false   
+          },
+          {
+            id: 'PARK',
+            name: '洗石面車輪擋',
+            category: '其他', 
+            price: 0, 
+            unit: '塊',
+            image: 'https://image2url.com/r2/default/images/1772500341181-26043806-d336-4e60-b70e-20ffdf90197d.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772500503700-8d46cc5f-4825-4a91-b0e7-8a9257a3d901.jpg',
+              'https://image2url.com/r2/default/images/1772500544894-de78ee3c-6b9d-468e-a71f-8c94e031580a.jpg',
+              'https://image2url.com/r2/default/images/1772500877161-74984598-6115-40ce-9a39-5874f7ff6740.jpg',
+              'https://image2url.com/r2/default/images/1772500921101-23906de6-0e77-4813-8e35-db7d11b4f689.jpg'
+            ],
+            description: '專為停車空間量身打造的景觀家具。採用高強度水泥基底，表面結合精選天然鵝卵石，透過洗石工藝呈現出低調且富有手感溫度的紋理。', 
+            details: {
+              '主要材質': '水泥、天然鵝卵石',
+              '設計風格': '洗石面(黃 / 黑白)',
+              '色彩選擇': '可客製面材',
+           },
+           cases: [
+              { location: '桃園 大園砲陣地運動公園', type: '停車場', desc: '停車格輪擋' }
+            ],
+            featured: false   
+          },
+          {
+            id: 'WO',
+            name: '枕木磚',
+            category: '其他', 
+            price: 0, 
+            unit: 'm²',
+            image: 'https://image2url.com/r2/default/images/1772504187938-f2d58477-6c9a-44f9-b807-c00c7e517251.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772504372985-fc6d7881-e7d9-4e1f-b2e9-23c075bc5de2.jpg',
+              'https://image2url.com/r2/default/images/1772504348067-017647ba-1a75-4f0f-8d8c-81722a8c86ef.jpg',
+              'https://image2url.com/r2/default/images/1772504386906-be81ef66-b6d8-4aa8-b057-7e0f499d3172.jpg'
+            ],
+            description: '仿天然枕木紋路質感及色澤，是景觀步道的理想選擇。提供穩定、防滑且具備視覺層次的材質表面。。', 
+            details: {
+              '主要材質': '水泥、石英砂、天然石材粒料',
+              '設計風格': '天然枕木紋路、實木色',
+           },
+           cases: [
+              { location: '公園', type: '休閒步道', desc: '公園綠地串聯步道' }
+            ],
+            featured: false   
+          },
+          {
+            id: 'PNCS',
+            name: '景觀擋土磚',
+            category: '其他', 
+            price: 0, 
+            unit: 'm²',
+            image: 'https://image2url.com/r2/default/images/1772506610436-b46b488e-b4bd-42a5-be69-98243bfd1f99.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772506683692-5ceec72a-276a-4e74-b51d-dca990e1dfad.jpg',
+              'https://image2url.com/r2/default/images/1772506715752-1c6bb921-796b-44b2-9567-4d50f8150720.jpg',
+              'https://image2url.com/r2/default/images/1772506800188-3f8cfa1d-2409-458e-9d69-5262b81a66a5.jpg',
+              'https://image2url.com/r2/default/images/1772506824481-4f4577e8-5e8b-4c3e-b8a2-5889f6915d2c.jpg',
+              'https://image2url.com/r2/default/images/1772506850630-ee3f7282-4d79-443c-8f44-77fb22fabb24.jpg',
+              'https://image2url.com/r2/default/images/1772506866731-209f172d-7422-4518-9170-59afaa8319bf.jpg',
+              'https://image2url.com/r2/default/images/1772506884141-ec46710c-8915-4a5c-9700-fa0828af627e.jpg',
+              'https://image2url.com/r2/default/images/1772506900022-1ff38249-eb38-4a16-84ec-36aaa736c623.jpg'
+            ],
+            description: '專為坡地防護與空間界定設計。表面採用仿石材的粗礦岩面工法，能有效消除傳統水泥擋土牆的冰冷與壓迫感。產品導入「再生玻璃粒料」製作，並榮獲環保標章認證，是兼具結構強度與環境永續訴求的綠色景觀首選。其獨特的紋理設計，能隨光影變化展現豐富的立體層次。', 
+            details: {
+              '認證項目': '護坡磚環保標章',
+              '主要材質': '鋼筋水泥、天然大理石 / 花崗石碎石',
+              '設計風格': '粗礦岩面質感 (直紋 / 圓弧)',
+           },
+           cases: [
+              { location: '台中 龍井鯉魚山公園', type: '防護坡', desc: '園區步道防護坡' },
+              { location: '苗栗 卓蘭', type: '登山步道', desc: '登山步道防護坡' },
+              { location: '彰化 下茄荖', type: '灌溉渠道', desc: '灌溉渠道邊坡擋土磚' }
+            ],
+            featured: false   
+          },
+          {
+            id: 'GAP',
+            name: '溝蓋板',
+            category: '其他', 
+            price: 0, 
+            unit: '組',
+            image: 'https://image2url.com/r2/default/images/1772516940817-f65c3a35-941c-43a4-8303-98b55a0aab91.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772517311731-a4017fcc-feed-4f22-b828-564d83035bd7.jpg',
+              'https://image2url.com/r2/default/images/1772517192405-31135d05-2998-4e5a-84c0-10742be0565a.jpg',
+              'https://image2url.com/r2/default/images/1772517356753-e8aac19b-d94a-45e0-b1ee-9393871907fc.jpg',
+              'https://image2url.com/r2/default/images/1772517509519-c11c1c67-22fe-4f39-af88-e2cc31a4aa9a.jpg',
+              'https://image2url.com/r2/default/images/1772517453622-95321c29-c77d-43f9-a0e6-7cee4eab3f9f.jpg',
+              'https://image2url.com/r2/default/images/1772517419905-c67962aa-8f5b-405c-8c80-4c0c430055fe.jpg',
+              'https://image2url.com/r2/default/images/1772517654912-0b9e5582-cc00-4090-be8f-67852ae29e66.jpg',
+              'https://image2url.com/r2/default/images/1772517685199-de394b9a-84fb-4b14-b7af-22a998df218a.jpg',
+              'https://image2url.com/r2/default/images/1772518073918-5290e6a0-368c-4477-894b-7ce154cde75c.jpg',
+              'https://image2url.com/r2/default/images/1772518182393-107f9352-6743-430e-b613-1eb5968019e9.jpg',
+              'https://image2url.com/r2/default/images/1772518216458-dc9521e1-b8f2-4e9b-af10-ec961f68fcac.jpg',
+              'https://image2url.com/r2/default/images/1772518007824-f6db0bc1-db20-45a5-bd0c-5445c3e723ba.jpg',
+              'https://image2url.com/r2/default/images/1772518710586-00251ba8-1623-4795-be98-36af43aaa0fa.jpg',
+              'https://image2url.com/r2/default/images/1772518739040-c50da839-2345-4f18-b814-cd446efe85f4.jpg'
+            ],
+            description: '水泥、骨材經拌合壓鑄後脫模成型，隨即用水洗去表層附著之水泥，露出天然石之美麗質感', 
+            details: {
+              '色彩選擇': '黑 / 黃(可客製面材及文字)',
+              '主要材質': '水泥、天然石材粒料',
+              '設計風格': '洗石面 / 崗晶石面'
+           },
+           cases: [
+              { location: '苗栗 蕉埔國小', type: '通學步道', desc: '高壓磚通學步道搭配客製鍍鋅溝蓋板及洗石排水磚' },
+              { location: '台東 紅葉村', type: '人行道', desc: '高壓磚鋪面搭配洗石面路緣石及洗石面水溝蓋板' }
+            ],
+            featured: false   
+          },
+          // 10. 客製化藝術陶雕
+          {
+            id: 'CR',
+            name: '客製化陶雕',
+            category: '客製化藝術陶雕', 
+            price: 0, 
+            unit: 'm²',
+            image: 'https://image2url.com/r2/default/images/1772429987092-42414003-27ca-4d83-b283-6d56dd6b5fd1.jpg',
+            gallery: [
+              'https://image2url.com/r2/default/images/1772430030156-2cf909d4-2737-48d9-a959-31eca136ea48.jpg',
+              'https://image2url.com/r2/default/images/1772431031430-bcaf90e5-8231-4f80-81a3-4abb096cb954.jpg',
+              'https://image2url.com/r2/default/images/1772431951528-8eebdafb-922c-47e8-874f-03e96b351899.jpg',
+              'https://image2url.com/r2/default/images/1772431869515-8d00bde3-699e-431e-9452-c229d19b49ba.jpg',
+              'https://image2url.com/r2/default/images/1772433334452-dae53012-973e-4015-b09a-6cd9666d6eae.jpg'
+            ],
+            description: '將牆面提升豐富性，可依照需求設計客製，經高溫窯燒成型。具備陶質材料特有的溫潤質感，能將歷史、生態或抽象意象保存於建築之中。', 
+            details: {
+              '藝術風格': '浮雕、彩釉彩繪',
+              '耐候特性': '不褪色、耐磨 / 耐刮',
+              '配合設計': '可結合抿石子/手工創作圖騰/彩色砂圖騰進行多材質異適設計',
+              '適用範圍': '文化牆、入口標誌牆、景觀地標設施'
+           },
+           cases: [
+              { location: '苗栗 三義勝興', type: '休閒步道', desc: '塑木平台步道欄杆結合陶雕設計' },
+              { location: '嘉義 布袋菜舖里', type: '司令台牆面美化', desc: '手工創作圖騰結合陶雕設計美化' },
+              { location: '苗栗 三灣', type: '防坡牆面美化', desc: '抿石子結合陶雕設計美化' },
+              { location: '苗栗 山柑社區', type: '牆面美化', desc: '社區活動中心' },
+            ],
+            featured: true
+          }
+        ];
+
+        const CATEGORIES = [
+          '全部', '透水模組', '高壓混凝土磚', '路緣石/界石', '壓花地坪/紙模地坪', 
+          '客製化藝術陶雕', '手工創作圖騰/彩色砂圖騰', '牆磚系列', '欄杆系列', '塑木系列', '其他'
+        ];
+
+        const App = () => {
+          const [activeCategory, setActiveCategory] = useState('全部');
+          const [searchQuery, setSearchQuery] = useState('');
+          const [selectedProduct, setSelectedProduct] = useState(null);
+          const [isContactOpen, setIsContactOpen] = useState(false);
+          const [currentSlide, setCurrentSlide] = useState(0);
+
+          // 精確捲動到產品區域
+          const scrollToContent = () => {
+            const element = document.getElementById('main-content');
+            if (element) {
+              const yOffset = -100; 
+              const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+              window.scrollTo({ top: y, behavior: 'smooth' });
+            }
+          };
+
+          const filteredProducts = useMemo(() => {
+            return PRODUCTS_DB.filter(product => {
+              if (!product || !product.name) return false;
+              const matchesCategory = activeCategory === '全部' || product.category === activeCategory;
+              const matchesSearch = 
+                product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                product.description.toLowerCase().includes(searchQuery.toLowerCase());
+              return matchesCategory && matchesSearch;
+            });
+          }, [activeCategory, searchQuery]);
+
+          useEffect(() => {
+            const timer = setInterval(() => {
+              setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
+            }, 5000);
+            return () => clearInterval(timer);
+          }, []);
+
+          const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
+          const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + SLIDES.length) % SLIDES.length);
+
+          const handleBackToHome = () => {
+            setActiveCategory('全部');
+            setSearchQuery('');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          };
+
+          return (
+            <div className="min-h-screen bg-[#FDFCFB] text-slate-800 font-sans selection:bg-stone-200 text-left overflow-x-hidden">
+              
+              {/* 1. 頂部公告欄 */}
+              <div className="bg-stone-900 text-white text-[10px] md:text-xs py-2 px-6 flex justify-between items-center font-bold tracking-widest uppercase overflow-hidden whitespace-nowrap text-left z-50 relative">
+                <div className="flex items-center gap-4 animate-pulse text-left">
+                  <SVGSparkles className="w-3 h-3 text-blue-400" />
+                  <span>場鑄式透水技術 ‧ 定義景觀新高度</span>
+                </div>
+                <div className="hidden md:flex items-center gap-6 text-left">
+                  <div className="flex items-center gap-2">
+                    <SVGAward className="w-3 h-3 text-green-400" />
+                    <span>內政部認證建材</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-blue-400">
+                    <SVGGlobe className="w-3 h-3" />
+                    <span>服務全台工程</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 導覽列 */}
+              <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200 shadow-sm text-left font-bold">
+                <div className="max-w-7xl mx-auto px-6">
+                  <div className="flex justify-between items-center h-20 text-left">
+                    <div className="flex items-center gap-3 group cursor-pointer" onClick={handleBackToHome}>
+                      <div className="bg-stone-900 p-2 rounded-lg group-hover:bg-blue-600 transition-colors">
+                        <SVGMountain className="text-white w-6 h-6" />
+                      </div>
+                      <div className="flex flex-col text-left">
+                        <span className="text-xl font-black tracking-widest text-stone-900 uppercase leading-none">陶無二<span className="text-stone-500">客製工廠</span></span>
+                        <span className="text-[10px] text-stone-400 font-bold tracking-[0.2em] uppercase mt-1">TAO-WU-ER CUSTOM FACTORY</span>
+                      </div>
+                    </div>
+                    
+                    <div className="relative hidden lg:flex items-center flex-1 max-w-lg mx-12">
+                      <input
+                        type="text"
+                        placeholder="搜尋產品系列..."
+                        className="w-full pl-12 pr-4 py-2.5 bg-stone-100 border-none rounded-full focus:ring-2 focus:ring-blue-500/20 transition-all text-sm outline-none font-bold"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                      />
+                      <SVGSearch className="absolute left-4 text-stone-400 w-4 h-4" />
+                    </div>
+
+                    <div className="flex items-center gap-2 sm:gap-4 text-left">
+                      <button 
+                        onClick={() => setIsContactOpen(true)}
+                        className="px-4 sm:px-6 py-2.5 bg-stone-900 text-white rounded-full text-[10px] sm:text-xs font-bold hover:bg-blue-600 transition-all shadow-lg flex items-center gap-2 text-left"
+                      >
+                        <SVGMail className="w-4 h-4 shrink-0" /> 聯繫詢價
+                      </button>
+                      <button 
+                        onClick={handleBackToHome}
+                        className="px-3 sm:px-4 py-2.5 bg-white border border-stone-200 text-stone-900 rounded-full hover:bg-stone-50 transition-all shadow-sm"
+                      >
+                        <SVGHome className="w-4 h-4" /> 
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </nav>
+
+              {/* 2. 動態輪播 Banner */}
+              {activeCategory === '全部' && !searchQuery && (
+                <header className="relative h-[450px] md:h-[650px] bg-stone-900 overflow-hidden text-left font-bold">
+                  {SLIDES.map((slide, index) => (
+                    <div 
+                      key={index}
+                      className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                    >
+                      <div className="absolute inset-0 text-left">
+                        <img src={slide.image} className="w-full h-full object-cover scale-105" alt={slide.title} />
+                        <div className="absolute inset-0 bg-gradient-to-r from-stone-950/95 via-stone-950/60 to-transparent"></div>
+                      </div>
+                      
+                      <div className="relative z-20 max-w-7xl mx-auto px-6 h-full flex flex-col justify-center text-left text-white">
+                        <div className={`max-w-2xl transform transition-transform duration-1000 ${index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+                          <div className="flex items-center gap-3 mb-6 text-left">
+                            <div className="h-[1px] w-12 bg-blue-500"></div>
+                            <span className="text-blue-400 text-xs md:text-sm font-black tracking-[0.3em] uppercase">{slide.subtitle}</span>
+                          </div>
+                          <h1 className="text-4xl md:text-7xl font-black mb-6 leading-tight tracking-tighter text-left">
+                            {slide.title}
+                          </h1>
+                          <p className="text-stone-300 text-sm md:text-lg mb-10 leading-relaxed font-light text-left">
+                            {slide.desc}
+                          </p>
+                          <div className="flex flex-wrap gap-4 text-left">
+                            <button 
+                              onClick={() => {
+                                setActiveCategory(slide.category);
+                                setTimeout(scrollToContent, 50); 
+                              }}
+                              className="px-8 py-4 bg-white text-stone-900 rounded-2xl font-black hover:bg-blue-600 hover:text-white transition-all shadow-xl flex items-center gap-2 text-left"
+                            >
+                              查看詳細目錄 <SVGArrowRight className="w-5 h-5" />
+                            </button>
+                            <div className="px-6 py-4 border border-white/20 rounded-2xl font-bold bg-white/5 backdrop-blur-sm text-[10px] md:text-xs flex items-center text-left">
+                              {slide.tag}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  <button onClick={prevSlide} className="absolute left-6 top-1/2 -translate-y-1/2 z-30 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md border border-white/10 hidden md:block transition-all text-left">
+                    <SVGChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button onClick={nextSlide} className="absolute right-6 top-1/2 -translate-y-1/2 z-30 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md border border-white/10 hidden md:block transition-all text-left">
+                    <SVGChevronRight className="w-6 h-6" />
+                  </button>
+
+                  <div className="absolute bottom-10 left-6 z-30 flex gap-3 text-left">
+                    {SLIDES.map((_, i) => (
+                      <button key={i} onClick={() => setCurrentSlide(i)} className={`h-1 transition-all duration-500 rounded-full ${i === currentSlide ? 'w-12 bg-blue-500' : 'w-4 bg-white/30 hover:bg-white/50'}`} />
+                    ))}
+                  </div>
+                </header>
+              )}
+
+              {/* 產品展示區 */}
+              <main id="main-content" className="max-w-7xl mx-auto px-6 py-16 text-left">
+                <div className="flex flex-col lg:flex-row gap-12 text-left">
+                  
+                  <aside className="w-full lg:w-64 shrink-0 text-left font-bold">
+                    <div className="sticky top-28 text-left">
+                      <h3 className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-6 px-4 text-left font-bold">產品系列</h3>
+                      <div className="flex lg:flex-col gap-1 overflow-x-auto pb-6 lg:pb-0 no-scrollbar text-left font-bold">
+                        {CATEGORIES.map(category => (
+                          <button
+                            key={category}
+                            onClick={() => {
+                              setActiveCategory(category);
+                              scrollToContent();
+                            }}
+                            className={`flex items-center justify-between px-4 py-3.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap text-left ${
+                              activeCategory === category
+                                ? 'bg-stone-900 text-white shadow-xl translate-x-1'
+                                : 'text-stone-500 hover:bg-stone-100'
+                            }`}
+                          >
+                            <span>{category}</span>
+                            <span className={`text-[10px] ml-4 font-black ${activeCategory === category ? 'opacity-50' : 'text-stone-300'}`}>
+                              {PRODUCTS_DB.filter(p => category === '全部' || p.category === category).length}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </aside>
+
+                  <div className="flex-1 text-left">
+                    <header className="mb-12 border-b border-stone-100 pb-8 text-left font-bold">
+                      <h2 className="text-4xl font-black text-stone-900 tracking-tight text-left uppercase">{activeCategory}</h2>
+                      <div className="flex items-center gap-2 mt-2 text-left">
+                         <div className="h-1 w-8 bg-blue-600 rounded-full"></div>
+                         <p className="text-stone-400 text-[10px] uppercase tracking-widest font-black text-left italic">Landscape Engineering & Architecture</p>
+                      </div>
+                    </header>
+
+                    {filteredProducts.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 text-left font-bold">
+                        {filteredProducts.map(product => (
+                          <div 
+                            key={product.id}
+                            className="group flex flex-col cursor-pointer bg-white rounded-3xl overflow-hidden border border-stone-100 hover:border-blue-100 hover:shadow-2xl transition-all duration-500 text-left"
+                            onClick={() => setSelectedProduct(product)}
+                          >
+                            <div className="relative aspect-[4/5] overflow-hidden bg-stone-50 text-left">
+                              <img src={product.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={product.name} />
+                              {product.featured && <div className="absolute top-4 left-4 bg-blue-600 text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase shadow-lg text-left">熱門產品</div>}
+                              {(product.details?.['認證項目']?.includes('標章') || product.details?.['環保認證']) && <div className="absolute top-4 right-4 bg-green-600 text-white p-1.5 rounded-lg shadow-lg text-left font-bold"><SVGAward className="w-4 h-4" /></div>}
+                            </div>
+                            
+                            <div className="p-6 flex-1 flex flex-col text-left">
+                              <div className="flex items-center justify-between mb-2 text-left font-bold">
+                                <span className="text-[10px] font-black text-blue-600 uppercase bg-blue-50 px-2 py-0.5 rounded text-left font-bold">{product.category}</span>
+                                <span className="text-[10px] font-bold text-stone-300 text-left tracking-widest font-bold">ID: {product.id}</span>
+                              </div>
+                              <h3 className="text-xl font-bold text-stone-900 mb-3 group-hover:text-blue-600 transition-colors text-left font-bold">
+                                {product.name}
+                              </h3>
+                              <p className="text-stone-500 text-sm mb-6 line-clamp-2 leading-relaxed text-left font-normal italic font-bold">
+                                {product.description}
+                              </p>
+                              <div className="mt-auto flex items-center justify-between text-left font-bold">
+                                <span className="text-sm font-black text-stone-900 flex items-center gap-1 text-left font-bold">
+                                  <SVGCheckCircle2 className="w-4 h-4 text-green-500" /> 認證建材
+                                </span>
+                                <div className="p-2 bg-stone-50 rounded-full group-hover:bg-stone-900 group-hover:text-white transition-all text-left">
+                                  <SVGChevronRight className="w-5 h-5" />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-40 bg-white rounded-[3rem] border border-stone-100 text-left font-bold">
+                        <SVGInfo className="w-12 h-12 text-stone-200 mx-auto mb-4 font-bold" />
+                        <h3 className="text-lg font-bold text-stone-400 text-center uppercase tracking-widest font-bold">資料整理中...</h3>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </main>
+
+              {/* 產品詳情 Modal */}
+              {selectedProduct && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 text-left animate-in fade-in duration-300 font-bold">
+                  <div className="absolute inset-0 bg-stone-950/90 backdrop-blur-md" onClick={() => setSelectedProduct(null)}></div>
+                  
+                  <div className="relative bg-white w-full max-w-6xl rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-left animate-in zoom-in duration-300 font-bold">
+                    
+                    {/* 關閉按鈕：固定在 Modal 右上角 */}
+                    <button 
+                      onClick={() => setSelectedProduct(null)} 
+                      className="absolute top-6 right-6 z-[110] p-3 bg-white/80 backdrop-blur hover:bg-white hover:text-stone-900 text-stone-500 rounded-full shadow-lg transition-all text-left font-bold"
+                    >
+                      <SVGX className="w-6 h-6" />
+                    </button>
+                    
+                    {/* 統一捲動容器 */}
+                    <div className="overflow-y-auto h-full scroll-smooth font-bold">
+                      <div className="flex flex-col md:flex-row min-h-full font-bold">
+                        
+                        {/* 左側：封面圖與案例 */}
+                        <div className="w-full md:w-5/12 bg-stone-50 flex flex-col text-left border-r border-stone-100 font-bold">
+                          <img src={selectedProduct.image} className="w-full h-auto object-cover border-b border-stone-100" alt={selectedProduct.name} />
+                          <div className="p-8 bg-stone-900 text-white text-left font-bold flex-1 font-bold">
+                            <h4 className="text-[10px] font-black text-stone-500 uppercase tracking-[0.4em] mb-6 text-left font-bold tracking-widest uppercase font-bold">實績案例 / PROJECT CASES</h4>
+                            <div className="space-y-6 text-left font-normal font-bold">
+                              {selectedProduct.cases?.map((c, i) => (
+                                <div key={i} className="flex gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 text-left font-normal font-bold">
+                                  <SVGMapPin className="text-blue-400 w-4 h-4 shrink-0 mt-1 font-bold" />
+                                  <div className="text-left font-normal font-bold">
+                                    <div className="text-sm font-bold text-left font-bold">{c.location}</div>
+                                    <div className="text-[10px] text-blue-500 font-bold uppercase mb-1 tracking-widest text-left font-bold font-bold">{c.type}</div>
+                                    <div className="text-xs text-stone-400 leading-relaxed text-left font-normal font-bold">{c.desc}</div>
+                                  </div>
+                                </div>
+                              ))}
+                              {!selectedProduct.cases && (
+                                <div className="p-6 border border-white/10 rounded-2xl bg-white/5 text-left font-bold">
+                                  <SVGConstruction className="w-8 h-8 text-blue-400 mb-4 text-left font-bold" />
+                                  <p className="text-sm leading-relaxed text-stone-300 text-left font-light italic font-bold">
+                                    提供專業配置諮詢，請聯繫我們的景觀設計顧問。
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* 右側：詳細規格 */}
+                        <div className="w-full md:w-7/12 p-10 md:p-14 flex flex-col text-left bg-white font-bold font-bold">
+                          <div className="mb-10 text-left font-bold">
+                            <div className="flex flex-wrap gap-2 mb-4 text-left font-bold">
+                              <span className="inline-block px-3 py-1 bg-stone-100 text-stone-600 rounded-lg text-[10px] font-black uppercase tracking-widest text-left font-bold">
+                                {selectedProduct.category}
+                              </span>
+                              {selectedProduct.details?.['認證項目'] && <span className="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-lg text-[10px] font-black uppercase tracking-widest text-left font-bold tracking-widest font-bold">認證標章</span>}
+                            </div>
+                            <h2 className="text-4xl font-black text-stone-900 mb-6 leading-tight text-left font-bold">{selectedProduct.name}</h2>
+                            <div className="flex items-center gap-6 text-left font-bold">
+                               <div className="flex items-center gap-2 text-stone-500 text-left font-bold font-bold"><SVGSparkles className="w-5 h-5 font-bold" /><span className="text-sm font-bold text-left font-bold">優質工法</span></div>
+                               <div className="flex items-center gap-2 text-stone-500 text-left font-bold font-bold"><SVGCheckCircle2 className="w-5 h-5 text-green-500 font-bold" /><span className="text-sm font-bold text-left font-bold">檢驗合格</span></div>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-12 text-left flex-1 font-bold font-bold">
+                            <div className="text-left font-bold">
+                              <h4 className="text-[10px] font-black text-stone-300 uppercase tracking-[0.4em] mb-4 text-left font-bold tracking-widest uppercase font-bold">產品介紹 / DESCRIPTION</h4>
+                              <p className="text-stone-600 leading-relaxed text-lg font-light text-left font-normal italic font-bold">
+                                {selectedProduct.description}
+                              </p>
+                            </div>
+                            
+                            <div className="text-left font-bold font-bold">
+                              <h4 className="text-[10px] font-black text-stone-300 uppercase tracking-[0.4em] mb-4 text-left font-bold tracking-widest uppercase font-bold">技術規格 / SPECIFICATIONS</h4>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-left font-bold">
+                                {selectedProduct.details && Object.entries(selectedProduct.details).map(([key, value]) => (
+                                  <div key={key} className="flex flex-col py-3 border-b border-stone-50 text-left font-bold">
+                                    <span className="text-[10px] font-black text-stone-400 uppercase tracking-wider mb-1 text-left font-bold tracking-widest uppercase font-bold">{key}</span>
+                                    <span className="text-sm font-black text-stone-900 leading-tight text-left font-bold font-bold">{value}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {selectedProduct.gallery && selectedProduct.gallery.length > 0 && (
+                              <div className="text-left font-bold">
+                                <h4 className="text-[10px] font-black text-stone-300 uppercase tracking-[0.4em] mb-6 flex items-center gap-2 text-left font-bold tracking-widest uppercase font-bold font-bold"><SVGImageIcon className="w-4 h-4 font-bold" /> 產品展示 / GALLERY</h4>
+                                <div className="grid grid-cols-2 gap-4 text-left font-bold">
+                                  {selectedProduct.gallery.map((imgUrl, index) => (
+                                    <div key={index} className="aspect-video rounded-2xl overflow-hidden bg-stone-100 group shadow-inner text-left font-bold">
+                                      <img src={imgUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 text-left font-bold font-bold" alt="Gallery" />
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="mt-12 text-left font-bold">
+                            <button onClick={() => setIsContactOpen(true)} className="w-full py-5 bg-stone-900 text-white rounded-2xl font-bold hover:bg-blue-600 transition-all flex items-center justify-center gap-3 shadow-xl text-left font-bold tracking-widest font-bold">
+                               聯繫諮詢報價 <SVGArrowRight className="w-4 h-4 text-left font-bold" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 聯繫視窗 Modal */}
+              {isContactOpen && (
+                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 text-left font-bold">
+                  <div className="absolute inset-0 bg-stone-950/95 backdrop-blur-md font-bold" onClick={() => setIsContactOpen(false)}></div>
+                  <div className="relative bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl overflow-hidden p-8 md:p-12 text-center animate-in slide-in-from-bottom duration-300 text-left font-bold font-bold">
+                    <button onClick={() => setIsContactOpen(false)} className="absolute top-6 right-6 p-2 hover:bg-stone-100 rounded-full transition-all text-left font-bold font-bold font-bold"><SVGX className="w-6 h-6 text-stone-400 text-left font-bold" /></button>
+                    <div className="mb-10 flex flex-col items-center text-left font-bold font-bold">
+                      <div className="bg-blue-600 p-4 rounded-3xl mb-6 shadow-xl shadow-blue-100 text-left font-bold"><SVGMountain className="text-white w-10 h-10 text-left font-bold" /></div>
+                      <h2 className="text-3xl font-black text-stone-900 mb-2 text-left font-bold tracking-widest uppercase font-bold">陶無二客製工廠</h2>
+                      <p className="text-stone-400 text-sm font-medium uppercase tracking-widest text-center text-left font-bold italic font-bold">Contact Information</p>
+                    </div>
+                    <div className="space-y-4 mb-10 text-left font-bold font-bold">
+                      {/* 電子郵件連結：跳轉至 Gmail 撰寫頁面 */}
+                      <a 
+                        href="https://mail.google.com/mail/?view=cm&fs=1&to=home860118@gmail.com" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-4 p-5 bg-stone-50 rounded-2xl border border-stone-100 hover:border-blue-500 hover:bg-white transition-all group text-left font-bold"
+                      >
+                        <div className="p-3 bg-white rounded-xl shadow-sm group-hover:bg-blue-600 group-hover:text-white transition-all text-left">
+                          <SVGMail className="w-5 h-5 text-blue-600 group-hover:text-white text-left" />
+                        </div>
+                        <div className="text-left">
+                          <span className="text-[10px] font-black text-stone-300 uppercase tracking-widest block text-left">電子郵件</span>
+                          <span className="text-sm font-bold text-stone-900 text-left">home860118@gmail.com</span>
+                        </div>
+                      </a>
+                      <a href="tel:0426363388" className="flex items-center gap-4 p-5 bg-stone-50 rounded-2xl border border-stone-100 hover:border-blue-500 hover:bg-white transition-all group text-left font-bold">
+                        <div className="p-3 bg-white rounded-xl shadow-sm group-hover:bg-blue-600 group-hover:text-white transition-all text-left">
+                          <SVGPhone className="w-5 h-5 text-blue-600 group-hover:text-white text-left" />
+                        </div>
+                        <div className="text-left">
+                          <span className="text-[10px] font-black text-stone-300 uppercase tracking-widest block text-left">聯繫電話</span>
+                          <span className="text-sm font-bold text-stone-900 text-left">04-26363388</span>
+                        </div>
+                      </a>
+                      {/* 公司地址連結：跳轉至 Google Maps */}
+                      <a 
+                        href="https://www.google.com/maps/search/?api=1&query=434023+臺中市龍井區茄投路一段1巷35號"
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-4 p-5 bg-stone-50 rounded-2xl border border-stone-100 hover:border-blue-500 hover:bg-white transition-all group text-left font-bold"
+                      >
+                        <div className="p-3 bg-white rounded-xl shadow-sm group-hover:bg-blue-600 group-hover:text-white transition-all text-left">
+                          <SVGMapPin className="w-5 h-5 text-blue-600 group-hover:text-white text-left" />
+                        </div>
+                        <div className="text-left">
+                          <span className="text-[10px] font-black text-stone-300 uppercase tracking-widest block text-left tracking-widest">公司地址</span>
+                          <span className="text-sm font-bold text-stone-900 leading-tight text-left tracking-widest">434023 臺中市龍井區茄投路一段1巷35號</span>
+                        </div>
+                      </a>
+                    </div>
+                    <button onClick={() => setIsContactOpen(false)} className="w-full py-4 bg-stone-900 text-white rounded-2xl font-bold hover:bg-blue-600 transition-all shadow-lg text-mid font-bold uppercase tracking-widest">關閉視窗</button>
+                  </div>
+                </div>
+              )}
+
+              {/* 頁尾 */}
+              <footer className="bg-stone-100 py-16 mt-20 border-t border-stone-200 text-center px-6 font-bold">
+                <div className="flex justify-center gap-2 mb-6 opacity-20 items-center">
+                  <SVGMountain className="w-5 h-5" />
+                  <span className="font-black tracking-widest uppercase italic text-stone-900">陶無二客製工廠</span>
+                </div>
+                <p className="text-stone-300 text-[10px] space-y-1 uppercase tracking-widest font-bold">
+                  © 2026 陶無二客製工廠股份有限公司 | 434023 臺中市龍井區茄投路一段1巷35號 ‧ 04-26363388
+                </p>
+              </footer>
+            </div>
+          );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
