@@ -33,6 +33,7 @@
         const SVGChevronLeft = (props) => <Icon {...props}><path d="m15 18-6-6 6-6"/></Icon>;
         const SVGChevronRight = (props) => <Icon {...props}><path d="m9 18 6-6-9-6"/></Icon>;
         const SVGArrowRight = (props) => <Icon {...props}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></Icon>;
+        const SVGArrowUp = (props) => <Icon {...props}><path d="m18 15-6-6-6 6"/></Icon>;
         const SVGCheckCircle2 = (props) => <Icon {...props}><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></Icon>;
         const SVGMapPin = (props) => <Icon {...props}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></Icon>;
         const SVGConstruction = (props) => <Icon {...props}><rect x="2" y="6" width="20" height="8" rx="1"/><path d="M17 14v7"/><path d="M7 14v7"/><path d="M17 3v3"/><path d="M7 3v3"/><path d="M10 14 2.3 6.3"/><path d="m14 14 7.7-7.7"/></Icon>;
@@ -510,8 +511,8 @@
               '適合尺寸': '30cm / 40cm / 50cm',
               '安裝特性': '易施工、耐酸鹼、不吸水易清潔',
               '適用範圍': '圍牆外飾、花台立面裝飾'
-           },
-           cases: [
+            },
+            cases: [
               { location: '台中 龍井鯉魚山公園', type: '步道花台', desc: '園區步道綠帶花台' },
               { location: '桃園 角板山', type: '步道花台', desc: '角板山形象商圈步道綠帶花台' }
             ],
@@ -542,8 +543,8 @@
               '表面處理': '仿天然石材平光面',
               '造型種類': '方型 / 圓形 / 水滴',
               '適用範圍': '圍牆裝飾磚、屏風牆面'
-           },
-           cases: [
+            },
+            cases: [
               { location: '台中 大雅員林村', type: '公園廣場圍牆', desc: '廣場圍牆結合透空磚設計' },
               { location: '雲林 利眾公廟', type: '廣場圍牆', desc: '廣場圍牆結合透空磚設計' },
               { location: '台中 瓦瑤橋', type: '人行道圍欄', desc: '人行道圍欄美化設計' }
@@ -570,8 +571,8 @@
               '色彩選擇': '可客製選擇搭配 (洗石面 / 岩面 / 仿木紋)',
               '造型種類': '雙橫桿 / 三橫桿 / 直立桿 / 鋼索',
               '適用範圍': '河道護欄、步道欄杆、公園休憩區區隔'
-           },
-           cases: [
+            },
+            cases: [
               { location: '台東 南島大道', type: '人行道', desc: '田間人行道結合高壓磚鋪面' },
               { location: '台中 十四張圳公園', type: '休閒步道', desc: '高壓磚、界石及街道家具結合欄杆之親水步道' },
               { location: '台中 后里派出所', type: '人行道', desc: '結合高壓磚鋪面' },
@@ -597,8 +598,8 @@
               '色彩選擇': '可客製選擇搭配 (洗石面 / 岩面 / 仿木紋)',
               '造型種類': '雙橫桿 / 三橫桿 / 直立桿',
               '適用範圍': '河道護欄、步道欄杆、公園休憩區區隔'
-           },
-           cases: [
+            },
+            cases: [
               { location: '台中 龍井鯉魚山公園', type: '防護坡', desc: '防護坡洗石欄杆' },
               { location: '雲林 土庫道路', type: '道路欄杆', desc: '田間道路欄杆' },
               { location: '苗栗 龍鳳漁港', type: '防波堤平台', desc: '壓花地坪結合洗石欄杆之防波堤平台' },
@@ -624,8 +625,8 @@
               '性能優點': '防霉防水、抗白蟻、不需定期刷漆油保養',
               '色彩選擇': '實木色',
               '配合設計': '可作景觀花架、涼亭頂部格柵、造型格柵、指標牌等'
-           },
-           cases: [
+            },
+            cases: [
               { location: '台南 鯽魚橋', type: '步道欄杆', desc: '親水步道欄杆' },
               { location: '南投 永山宮', type: '觀景平台', desc: '塑木觀景平台結合塑木欄杆及座椅' }
             ],
@@ -648,8 +649,8 @@
               '性能優點': '防霉防水、抗白蟻、不需定期刷漆油保養',
               '色彩選擇': '實木色',
               '配合設計': '可作景觀花架、涼亭頂部格柵、造型格柵、指標牌等'
-           },
-           cases: [
+            },
+            cases: [
               { location: '台南 鯽魚橋', type: '休憩平台', desc: '步道休憩平台塑木花架' }
             ],
             featured: false
@@ -671,8 +672,8 @@
               '性能優點': '防霉防水、抗白蟻、不需定期刷漆油保養',
               '色彩選擇': '實木色',
               '配合設計': '可作景觀花架、涼亭頂部格柵、造型格柵、指標牌等'
-           },
-           cases: [
+            },
+            cases: [
               { location: '南投 永山宮', type: '觀景平台', desc: '塑木觀景平台結合塑木欄杆及座椅' }
             ],
             featured: false
@@ -695,8 +696,8 @@
               '性能優點': '防霉防水、抗白蟻、不需定期刷漆油保養',
               '色彩選擇': '實木色',
               '配合設計': '可作景觀花架、涼亭頂部格柵、造型格柵、指標牌等'
-           },
-           cases: [
+            },
+            cases: [
               { location: '苗栗 山腳國小', type: '圍牆格柵', desc: '校園圍牆結合塑木格柵設計' },
               { location: '桃園 角板山', type: '入口意象', desc: '角板山形象商圈入口意象塑木格柵結合彩色砂圖騰牆面' }
             ],
@@ -720,8 +721,8 @@
               '性能優點': '防霉防水、抗白蟻、不需定期刷漆油保養',
               '色彩選擇': '實木色',
               '配合設計': '可作景觀花架、涼亭頂部格柵、造型格柵、指標牌等'
-           },
-           cases: [
+            },
+            cases: [
               { location: '嘉義 梅山鄉太興村', type: '休憩涼亭', desc: '廣場休憩涼亭' },
               { location: '苗栗 三義茶油', type: '休憩空間', desc: '廣場休憩空間塑木涼亭' }
             ],
@@ -748,8 +749,8 @@
               '設計風格': '細鑿面、平滑拋光面',
               '耐用度': '高承重、抗撞擊、全天候環境適用',
               '色彩選擇': '椅腳可客製化顏色'
-           },
-           cases: [
+            },
+            cases: [
               { location: '雲林 褒忠參天府', type: '人行道及廣場', desc: '人行道鋪設美化及廣場鋪面' },
               { location: '大同國小', type: '休憩涼亭', desc: '塑木花架搭配繩編界石及石材座椅' },
               { location: '台中 大雅運動公園', type: '休閒步道', desc: '塑木花架搭配高壓洗石子磚、繩編界石及石材座椅' },
@@ -776,8 +777,8 @@
             details: {
               '主要材質': '鋼筋水泥、天然石材粒料、人造鵝卵石',
               '設計風格': '崗晶石面、細鑿面',
-           },
-           cases: [
+            },
+            cases: [
               { location: '屏東 潮州', type: '停車場出入口', desc: '車道出入口與行人區隔設置' },
               { location: '台中 十四張圳公園', type: '休閒步道出入口', desc: '車道與行人區隔設置' }
             ],
@@ -801,8 +802,8 @@
               '主要材質': '水泥、天然鵝卵石',
               '設計風格': '洗石面(黃 / 黑白)',
               '色彩選擇': '可客製面材',
-           },
-           cases: [
+            },
+            cases: [
               { location: '桃園 大園砲陣地運動公園', type: '停車場', desc: '停車格輪擋' }
             ],
             featured: false   
@@ -823,8 +824,8 @@
             details: {
               '主要材質': '水泥、石英砂、天然石材粒料',
               '設計風格': '天然枕木紋路、實木色',
-           },
-           cases: [
+            },
+            cases: [
               { location: '公園', type: '休閒步道', desc: '公園綠地串聯步道' }
             ],
             featured: false   
@@ -851,8 +852,8 @@
               '認證項目': '護坡磚環保標章',
               '主要材質': '鋼筋水泥、天然大理石 / 花崗石碎石',
               '設計風格': '粗礦岩面質感 (直紋 / 圓弧)',
-           },
-           cases: [
+            },
+            cases: [
               { location: '台中 龍井鯉魚山公園', type: '防護坡', desc: '園區步道防護坡' },
               { location: '苗栗 卓蘭', type: '登山步道', desc: '登山步道防護坡' },
               { location: '彰化 下茄荖', type: '灌溉渠道', desc: '灌溉渠道邊坡擋土磚' }
@@ -887,8 +888,8 @@
               '色彩選擇': '黑 / 黃(可客製面材及文字)',
               '主要材質': '水泥、天然石材粒料',
               '設計風格': '洗石面 / 崗晶石面'
-           },
-           cases: [
+            },
+            cases: [
               { location: '苗栗 蕉埔國小', type: '通學步道', desc: '高壓磚通學步道搭配客製鍍鋅溝蓋板及洗石排水磚' },
               { location: '台東 紅葉村', type: '人行道', desc: '高壓磚鋪面搭配洗石面路緣石及洗石面水溝蓋板' }
             ],
@@ -915,8 +916,8 @@
               '耐候特性': '不褪色、耐磨 / 耐刮',
               '配合設計': '可結合抿石子/手工創作圖騰/彩色砂圖騰進行多材質異適設計',
               '適用範圍': '文化牆、入口標誌牆、景觀地標設施'
-           },
-           cases: [
+            },
+            cases: [
               { location: '苗栗 三義勝興', type: '休閒步道', desc: '塑木平台步道欄杆結合陶雕設計' },
               { location: '嘉義 布袋菜舖里', type: '司令台牆面美化', desc: '手工創作圖騰結合陶雕設計美化' },
               { location: '苗栗 三灣', type: '防坡牆面美化', desc: '抿石子結合陶雕設計美化' },
@@ -937,6 +938,7 @@
           const [selectedProduct, setSelectedProduct] = useState(null);
           const [isContactOpen, setIsContactOpen] = useState(false);
           const [currentSlide, setCurrentSlide] = useState(0);
+          const [showTopBtn, setShowTopBtn] = useState(false);
 
           // 精確捲動到產品區域
           const scrollToContent = () => {
@@ -946,6 +948,14 @@
               const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
               window.scrollTo({ top: y, behavior: 'smooth' });
             }
+          };
+
+          // 捲動至最頂部
+          const scrollToTop = () => {
+            window.scrollTo({
+              top: 0,
+              behavior: 'smooth',
+            });
           };
 
           const filteredProducts = useMemo(() => {
@@ -964,6 +974,19 @@
               setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
             }, 5000);
             return () => clearInterval(timer);
+          }, []);
+
+          // 監聽滾動事件控制 Top 按鈕顯示
+          useEffect(() => {
+            const handleScroll = () => {
+              if (window.scrollY > 400) {
+                setShowTopBtn(true);
+              } else {
+                setShowTopBtn(false);
+              }
+            };
+            window.addEventListener('scroll', handleScroll);
+            return () => window.removeEventListener('scroll', handleScroll);
           }, []);
 
           const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
@@ -1006,7 +1029,7 @@
                       </div>
                       <div className="flex flex-col text-left">
                         <span className="text-xl font-black tracking-widest text-stone-900 uppercase leading-none">陶無二<span className="text-stone-500">客製工廠</span></span>
-                        <span className="text-[10px] text-stone-400 font-bold tracking-[0.2em] uppercase mt-1">TOU-WU-ER CUSTOM FACTORY</span>
+                        <span className="text-[10px] text-stone-400 font-bold tracking-[0.2em] uppercase mt-1">TAO-WU-ER CUSTOM FACTORY</span>
                       </div>
                     </div>
                     
@@ -1349,6 +1372,17 @@
                     <button onClick={() => setIsContactOpen(false)} className="w-full py-4 bg-stone-900 text-white rounded-2xl font-bold hover:bg-blue-600 transition-all shadow-lg text-mid font-bold uppercase tracking-widest">關閉視窗</button>
                   </div>
                 </div>
+              )}
+
+              {/* 回到頂部按鈕 */}
+              {showTopBtn && (
+                <button
+                  onClick={scrollToTop}
+                  className="fixed bottom-8 right-8 z-50 p-4 bg-blue-600 text-white rounded-full shadow-2xl hover:bg-stone-900 transition-all duration-300 hover:-translate-y-2 group"
+                  aria-label="回到頂部"
+                >
+                  <SVGArrowUp className="w-6 h-6 group-hover:animate-bounce" />
+                </button>
               )}
 
               {/* 頁尾 */}
